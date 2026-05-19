@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulation 2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d1117;
+  --ink2: #3a4452;
+  --ink3: #7a8694;
+  --blue: #1a56db;
+  --blue-light: #dbeafe;
+  --blue-dark: #1e40af;
+  --surface: #f7f9fc;
+  --line: #e2e8f0;
+  --white: #ffffff;
+  --green: #059669;
+  --orange: #ea580c;
+  --red: #dc2626;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Instrument Sans',sans-serif;background:var(--white);color:var(--ink);font-size:16px;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:3rem 1.5rem}
+
+.card{width:100%;max-width:780px}
+
+.title{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--ink);letter-spacing:-0.02em;margin-bottom:.25rem}
+.subtitle{font-size:13px;color:var(--ink3);margin-bottom:2rem}
+
+.params{display:flex;gap:2.5rem;margin-bottom:2rem;align-items:flex-end}
+.param-group{}
+.param-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.param-val{font-size:2rem;font-weight:500;color:var(--blue);font-family:'DM Mono',monospace;line-height:1}
+.param-input{display:flex;align-items:center;gap:6px;margin-top:6px}
+.param-input input[type=number]{width:80px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace;background:var(--white);color:var(--ink)}
+.param-input input:focus{outline:none;border-color:var(--blue)}
+.param-input span{font-size:13px;color:var(--ink3)}
+
+.fp-badge{margin-left:auto;text-align:right}
+.fp-badge-label{font-size:11px;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.fp-badge-val{font-size:1.5rem;font-weight:500;font-family:'DM Mono',monospace;color:var(--green)}
+
+.add-row{display:flex;gap:.6rem;margin-bottom:1.25rem;align-items:center}
+.add-row input[type=number]{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:'DM Mono',monospace;background:var(--white);color:var(--ink);width:200px}
+.add-row input:focus{outline:none;border-color:var(--blue)}
+.btn{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Instrument Sans',sans-serif}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink3)}
+.btn-ghost:hover{background:var(--surface)}
+
+.table-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{padding:10px 14px;background:var(--ink);color:#fff;font-size:12px;font-weight:500;text-align:left;font-family:'Instrument Sans',sans-serif}
+td{padding:10px 14px;border-bottom:1px solid var(--line);font-family:'DM Mono',monospace;font-size:13px;color:var(--ink2)}
+tr:last-child td{border-bottom:none}
+.h-cell{color:var(--blue);font-weight:500}
+.f-cell{font-weight:500}
+.f-green{color:var(--green)}
+.f-orange{color:var(--orange)}
+.f-red{color:var(--red)}
+.empty-row td{text-align:center;color:var(--ink3);font-family:'Instrument Sans',sans-serif;padding:2rem}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="title">Simulation 2</div>
+  <div class="subtitle">f(h) is exact value</div>
+
+  <div class="params">
+    <div class="param-group">
+      <div class="param-label">N (glass) — fixed</div>
+      <div class="param-val" id="n-disp">2.00</div>
+      <div class="param-input">
+        <input type="number" id="n-in" value="2" min="1.01" max="3" step="0.01">
+      </div>
+    </div>
+    <div class="param-group">
+      <div class="param-label">R (cm) — fixed</div>
+      <div class="param-val" id="r-disp">5.0</div>
+      <div class="param-input">
+        <input type="number" id="r-in" value="5" min="0.1" max="100" step="0.1">
+        <span>cm</span>
+      </div>
+    </div>
+    <div class="fp-badge">
+      <div class="fp-badge-label">f paraxial = R / n(n−1)</div>
+      <div class="fp-badge-val" id="fp-disp">2.5000 cm</div>
+    </div>
+  </div>
+
+  <div class="add-row">
+    <input type="number" id="h-in" placeholder="add h value (cm)" step="any" min="0.0001">
+    <button class="btn btn-primary" onclick="addRow()">ADD h</button>
+    <button class="btn btn-ghost" onclick="resetTable()">RESET</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>h (cm)</th>
+          <th>θ₁ = arcsin(h/R)</th>
+          <th>θ₂ = arcsin(h/nR)</th>
+          <th>β = θ₁ − θ₂</th>
+          <th>θ₄ = arcsin(n sin β)</th>
+          <th>f(h) (cm)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="empty-row"><td colspan="6">add an h value above to begin</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const nIn = document.getElementById('n-in');
+const rIn = document.getElementById('r-in');
+const hIn = document.getElementById('h-in');
+const nDisp = document.getElementById('n-disp');
+const rDisp = document.getElementById('r-disp');
+const fpDisp = document.getElementById('fp-disp');
+const tbody = document.getElementById('tbody');
+let rows = [];
+
+function compute(h, n, R) {
+  if (h <= 0 || h >= R) return null;
+  const th1 = Math.asin(h / R);
+  const th2 = Math.asin(h / (n * R));
+  const beta = th1 - th2;
+  const th4 = Math.asin(n * Math.sin(beta));
+  const sqr = Math.sqrt(R * R - h * h);
+  const Y = h - sqr * Math.tan(beta);
+  const f = Y / Math.tan(th4);
+  return { th1, th2, beta, th4, f };
+}
+
+function deg(r) { return (r * 180 / Math.PI).toFixed(4) + '°'; }
+
+function render() {
+  const n = parseFloat(nIn.value);
+  const R = parseFloat(rIn.value);
+  if (isNaN(n) || isNaN(R) || n <= 1 || R <= 0) return;
+  nDisp.textContent = n.toFixed(2);
+  rDisp.textContent = R.toFixed(1);
+  const fp = R / (n * (n - 1));
+  fpDisp.textContent = fp.toFixed(4) + ' cm';
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">add an h value above to begin</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(h => {
+    const r = compute(h, n, R);
+    if (!r) return `<tr><td class="h-cell">${h}</td><td colspan="5" style="color:var(--ink3);font-family:'Instrument Sans',sans-serif">h must be less than R = ${R} cm</td></tr>`;
+    const pct = Math.abs(r.f - fp) / fp * 100;
+    const cls = pct < 1 ? 'f-green' : pct < 5 ? 'f-orange' : 'f-red';
+    return `<tr>
+      <td class="h-cell">${h}</td>
+      <td>${deg(r.th1)}</td>
+      <td>${deg(r.th2)}</td>
+      <td>${deg(r.beta)}</td>
+      <td>${deg(r.th4)}</td>
+      <td class="f-cell ${cls}">${r.f.toFixed(4)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function addRow() {
+  const R = parseFloat(rIn.value);
+  const h = parseFloat(hIn.value);
+  if (isNaN(h) || h <= 0) return;
+  if (h >= R) { alert(`h must be less than R = ${R} cm`); return; }
+  if (rows.includes(h)) return;
+  rows.push(h);
+  rows.sort((a, b) => a - b);
+  hIn.value = '';
+  render();
+}
+
+function resetTable() { rows = []; render(); }
+
+hIn.addEventListener('keydown', e => { if (e.key === 'Enter') addRow(); });
+nIn.addEventListener('input', render);
+rIn.addEventListener('input', render);
+
+[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.5].forEach(h => rows.push(h));
+render();
+</script>
+</body>
+</html>
